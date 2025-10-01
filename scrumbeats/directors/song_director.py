@@ -1,12 +1,13 @@
 from agents import Agent
-from scrumbeats.integrations.elevenlabs import create_song
+from scrumbeats.integrations.suno import create_song
 
 lyrics_agent1 = Agent(
     name="Lyric Agent 1",
     model="gpt-4o-mini",
     instructions="""
         You are a lyric creator for Scrumbeats - A place where songs are made about development team progress.
-        You write fun lyrics about the teams last 24 hours. 
+        You write fun lyrics about the teams last 24 hours based on a summary. Answer with just the lyrics, and only the lyrics and no formatting.
+        Only generate 10 sentences of lyrics
     """
 )
 
@@ -15,7 +16,8 @@ lyrics_agent2 = Agent(
     model="gpt-4o-mini",
     instructions="""
         You are a lyric creator for Scrumbeats - A place where songs are made about development team progress.
-        You write roast lyrics about the teams last 24 hours. 
+        You write roast lyrics about the teams last 24 hours based on a summary. Answer with just the lyrics, and only the lyrics and no formatting.
+        Only generate 10 sentences of lyrics
     """
 )
 
@@ -24,25 +26,30 @@ lyrics_agent3 = Agent(
     model="gpt-4o-mini",
     instructions="""
         You are a lyric creator for Scrumbeats - A place where songs are made about development team progress.
-        You write neutral lyrics about the teams last 24 hours. 
+        You write neutral lyrics about the teams last 24 hours based on a summary. Answer with just the lyrics, and only the lyrics and no formatting.
+        Only generate 10 sentences of lyrics
     """
 )
 
 tool_description = "Write a lyrics about the teams past 24 hours"
 
-# TODO: Composition
 song_director = Agent(
     name="Song Director",
     instructions="""
-        You are a song director for the product Scrumbeats. Your goal is to take a summary of the teams progress the last 24 hours and create a song. 
-        Your goal is to come up with a good lyric and song. 
+        You are a song director for the product Scrumbeats. Your receive a summary of the teams progress the last 24 hours and create a song. 
+        Your goal is to use lyrics agents to come up with a good lyric and the 'create_song' tool to generate a song with the lyrics. 
 
         Follow these steps carefully: 
-        1. Gather lyrics: Use all lyrics tool to create lyrics. Do not proceed until all lyric agents has provided a result.
+        1. Gather lyrics: Use all lyrics tool to create lyrics. Pass the summary to all lyrics agents, and only the received summary, nothing else. Do not proceed until all lyric agents has provided a result.
 
         2. Evaluate lyrics: Take all three lyrics and evaluate them, pick the best one and only one.
 
-        3. Use the song tool to create the song with lyric. Pass the best lyric and a style (Rock, Rap, House, Techno, Country)
+        3. Use the song tool to create the song with lyric. Pass the best lyric and a style (Rock, Rap, House, Techno, Country). ONLY DO THIS STEP ONCE!
+
+        Crucial Rules:
+            - You DO NOT create lyrics by yourself
+            - You pass the summary, and only the summary to the lyrics agents
+            - ONLY call 'create_song' tool ONCE. 
     """,
     tools=[
         lyrics_agent1.as_tool(tool_name="lyrics_agent1", tool_description=tool_description),

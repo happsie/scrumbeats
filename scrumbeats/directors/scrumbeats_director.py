@@ -1,6 +1,14 @@
-from scrumbeats.directors import song_director
+from .song_director import song_director
 from scrumbeats.integrations import pull_requests, issues, builds 
-from agents import Agent, Runner
+from agents import Agent, handoff, RunContextWrapper
+from pydantic import BaseModel
+
+class Summary(BaseModel):
+    summary: str
+    """The summary of the teams progress the past 24 hours"""
+
+async def on_handoff(ctx: RunContextWrapper[None], input_data: Summary):
+    print(f"Song Director agent called with summary: {input_data.summary}")
 
 scrumbeats_director = Agent(
     name="Scrumbeats Director",
@@ -24,6 +32,6 @@ scrumbeats_director = Agent(
         issues,
         builds
     ],
-    handoffs=[song_director],
-    model="gpt-4o-mini"
+    handoffs=[handoff(song_director, input_type=Summary, on_handoff=on_handoff)],
+    model="gpt-4o-mini",
 )

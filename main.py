@@ -1,28 +1,28 @@
 import asyncio
 import os
-import time
 
 from dotenv import load_dotenv
-from scrumbeats.directors import scrumbeats_director
+from scrumbeats.directors import scrumbeats_director, song_director
 from agents import trace, Runner
 
 def load_env():
     load_dotenv(override=True)
-    global OPENAI_API_KEY
     OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
     if not OPENAI_API_KEY:
         raise Exception("OpenAI API Key not specified")
+    SUNOAPI_API_KEY = os.getenv("SUNOAPI_API_KEY")
+    if not SUNOAPI_API_KEY:
+        raise Exception("SunoAPI API Key not specified")
 
 
-def main():
+async def main():
     print("ScrumBeats is tuning up!")
     load_env()
     with trace("Scrumbeats Song Creator"): 
         prompt = """
             Create a song about the team progress the last 24 hours. 
         """
-        result = asyncio.run(Runner.run(scrumbeats_director, prompt))
-        print(result)
+        await Runner.run(scrumbeats_director, prompt)
+        print("ScrumBeats tuning down!")
 
-if __name__ == "__main__":
-    main()
+asyncio.run(main())
