@@ -9,7 +9,7 @@ def create_song(lyric: str, genre: str):
     Create a song based on a lyrics and genre
 
     Args: 
-        - lyric: The lyric to create a song with
+        - lyrics: The lyrics to create a song with
         - Genre: The genre to create the song with 
     """
     SUNOAPI_API_KEY = os.getenv("SUNOAPI_API_KEY")
@@ -53,6 +53,7 @@ def poll(attempts: int):
     headers = {"Authorization": f"Bearer {SUNOAPI_API_KEY}",}
 
     response = requests.get(url, headers=headers)
+    print(response, response.json()["data"]["status"])
     if response.json()["data"]["status"] != "SUCCESS":
         time.sleep(15)
         poll(attempts=attempts+1)
