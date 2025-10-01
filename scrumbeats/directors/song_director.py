@@ -44,12 +44,12 @@ song_director = Agent(
 
         2. Evaluate lyrics: Take all three lyrics and evaluate them, pick the best one and only one.
 
-        3. Use the song tool to create the song with lyric. Pass the best lyric and a style (Rock, Rap, House, Techno, Country). ONLY DO THIS STEP ONCE!
+        3. Use the song tool to create the song with lyric. Pass the BEST lyric and a style (Rock, Rap, House, Techno, Country). ONLY DO THIS ONCE FOR THE BEST LYRIC!
 
         Crucial Rules:
             - You DO NOT create lyrics by yourself
             - You pass the summary, and only the summary to the lyrics agents
-            - ONLY call 'create_song' tool ONCE. 
+            - ONLY call 'create_song' tool ONCE with the BEST lyric. 
     """,
     tools=[
         lyrics_agent1.as_tool(tool_name="lyrics_agent1", tool_description=tool_description),
