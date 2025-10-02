@@ -1,5 +1,5 @@
-from agents import Agent
-from scrumbeats.integrations.suno import create_song
+from agents import Agent, function_tool
+from scrumbeats.integrations.suno import SongCreator
 from pydantic import BaseModel
 
 lyrics_agent1 = Agent(
@@ -66,6 +66,20 @@ lyrics_manager = Agent(
     output_type=Lyrics
 )
 
+class SongName(BaseModel):
+    name: str
+
+song_title_agent = Agent(
+    name="Song Name Agent",
+    instructions="""
+        You are a lyrics manager for the product Scrumbeats. Your receive lyrics of the teams progress the last 24 hours and will give a good song title based on it. 
+        Your goal is to generate a good song title.
+    """,
+    output_type=SongName
+)
+
+song_creator = SongCreator()
+
 song_director = Agent(
     name="Song Director",
     instructions="""
@@ -75,7 +89,9 @@ song_director = Agent(
         Follow these steps carefully: 
         1. Gather lyrics: Use the 'lyrics_manager' tool. Pass the summary to the 'lyrics_manager', and only the received summary, nothing else. Do not proceed until lyrics has been provided.
 
-        2. Use the song tool to create the song with lyrics. Pass the BEST lyrics and a choose a random style, either Rock, Rap, Metal, House, Techno or Country. ONLY CALL 'create_song' ONCE!
+        2. Generate a title: Pass lyrics to 'song_title_agent' to generate a good song name
+
+        3. Use the song tool to create the song with lyrics. Pass the BEST lyrics and a choose a style randomly. The style can be either Rock, Rap, Metal, House, Techno or Country. ONLY CALL 'create_song' ONCE!
 
         Crucial Rules:
             - You DO NOT create lyrics by yourself
@@ -84,7 +100,8 @@ song_director = Agent(
     """,
     tools=[
         lyrics_manager.as_tool(tool_name="lyrics_manager", tool_description="Generate the BEST lyric about the teams past 24 hours"),
-        create_song
+        song_title_agent.as_tool(tool_name="song_title_agent", tool_description="Generate a song title based on lyrics"),
+        function_tool(song_creator.create_song)
     ],
     model="gpt-4o-mini",
     handoff_description="Convert a summary of a developer team to a song"
