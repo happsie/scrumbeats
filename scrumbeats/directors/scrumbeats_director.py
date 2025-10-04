@@ -7,6 +7,13 @@ class Summary(BaseModel):
     summary: str
     """The summary of the teams progress the past 24 hours"""
 
+summary_agent = Agent(
+    name="Release Mocker", 
+    instructions="Write a comprehensive summary of the team progress the past 24 hours. You receive information about the latest pull requests, issues and releases.", 
+    output_type=Summary,
+    model="gpt-4o-mini"
+)
+
 async def on_handoff(ctx: RunContextWrapper[None], input_data: Summary):
     print(f"Song Director agent called with summary: {input_data.summary}")
 
@@ -17,9 +24,9 @@ scrumbeats_director = Agent(
         Your goal is to summarize all happenings in a concise and descriptive text. Do not leave out any information. Do not use markdown, only text.  
 
         Follow these steps carefully: 
-        1. Gather infromation: Use all three tools to gather infromation about the teams progress the last 24 hours. Do not proceed until all 3 tools has given a response. You should only do this once.
+        1. Gather infromation: Use all three tools to gather infromation about the teams progress the past 24 hours. Do not proceed until all 3 tools has given a response. You should only do this once.
 
-        2. Evaluate the response and write a summary. 
+        2. Use the 'summary_agent' to write a summary about the past 24 hours. 
 
         3. Handoff for creating a song: Pass the summary to the 'song_director'. The song director will handle the creation of the song. 
 
@@ -30,7 +37,8 @@ scrumbeats_director = Agent(
     tools=[
         pull_requests,
         issues,
-        release
+        release,
+        summary_agent.as_tool(tool_name="summary_agent", tool_description="write a summary based on the past 24 hours progress")
     ],
     handoffs=[handoff(song_director, input_type=Summary, on_handoff=on_handoff)],
     model="gpt-4o-mini",
