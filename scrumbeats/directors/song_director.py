@@ -1,4 +1,4 @@
-from agents import Agent, function_tool
+from agents import Agent, function_tool, output_guardrail, RunContextWrapper, GuardrailFunctionOutput
 from scrumbeats.integrations.suno import SongCreator
 from pydantic import BaseModel
 
@@ -8,7 +8,7 @@ lyrics_agent1 = Agent(
     instructions="""
         You are a lyric creator for Scrumbeats - A place where songs are made about development team progress.
         You write fun lyrics about the teams last 24 hours based on a summary. Answer with just the lyrics, and only the lyrics and no formatting.
-        Only generate 10 sentences of lyrics
+        Only generate 15 sentences of lyrics
     """
 )
 
@@ -18,7 +18,7 @@ lyrics_agent2 = Agent(
     instructions="""
         You are a lyric creator for Scrumbeats - A place where songs are made about development team progress.
         You write roast lyrics about the teams last 24 hours based on a summary. Answer with just the lyrics, and only the lyrics and no formatting.
-        Only generate 10 sentences of lyrics
+        Only generate 15 sentences of lyrics
     """
 )
 
@@ -28,7 +28,7 @@ lyrics_agent3 = Agent(
     instructions="""
         You are a lyric creator for Scrumbeats - A place where songs are made about development team progress.
         You write neutral lyrics about the teams last 24 hours based on a summary. Answer with just the lyrics, and only the lyrics and no formatting.
-        Only generate 10 sentences of lyrics
+        Only generate 15 sentences of lyrics
     """
 )
 
@@ -66,17 +66,44 @@ lyrics_manager = Agent(
     output_type=Lyrics
 )
 
-class SongName(BaseModel):
+class SongTitle(BaseModel):
     name: str
+    """The title of the song"""
 
 song_title_agent = Agent(
     name="Song Name Agent",
     instructions="""
-        You are a lyrics manager for the product Scrumbeats. Your receive lyrics of the teams progress the last 24 hours and will give a good song title based on it. 
+        You are a song title agent for the product Scrumbeats. Your receive lyrics of the teams progress the last 24 hours and will give a good song title based on it. 
         Your goal is to generate a good song title.
     """,
-    output_type=SongName
+    output_type=SongTitle,
+    model="gpt-4o-mini"
 )
+
+class MusicStyle(BaseModel):
+    style: str
+    """The music style specified with text"""
+    
+@output_guardrail
+async def character_length_guardrail(  
+    ctx: RunContextWrapper, agent: Agent, output: MusicStyle
+) -> GuardrailFunctionOutput:
+    return GuardrailFunctionOutput(
+        output_info=output,
+        tripwire_triggered=len(output.style) > 200,
+    )
+
+music_style_agent = Agent(
+    name="Song Name Agent",
+    instructions="""
+        You are a music style agent for the product Scrumbeats. Your receive lyrics of the teams progress the last 24 hours and will create a fitting music style using free text to describe it. 
+        Your goal is to generate a good music style. The text can not be longer than 150 characters
+    """,
+    output_type=MusicStyle,
+    model="gpt-4o-mini",
+    output_guardrails=[character_length_guardrail]
+)
+
 
 song_creator = SongCreator()
 
@@ -91,7 +118,9 @@ song_director = Agent(
 
         2. Generate a title: Pass lyrics to 'song_title_agent' to generate a good song name
 
-        3. Use the song tool to create the song with lyrics. Pass the BEST lyrics and a choose a style randomly. The style can be either Rock, Rap, Metal, House, Techno or Country. ONLY CALL 'create_song' ONCE!
+        3. Generate a song style: Pass the lyrics to 'music_style_agent' to generate a fitting music style
+
+        4. Use the song tool to create the song with lyrics. Pass the BEST lyrics, title and the generated style. ONLY CALL 'create_song' ONCE!
 
         Crucial Rules:
             - You DO NOT create lyrics by yourself
@@ -101,6 +130,7 @@ song_director = Agent(
     tools=[
         lyrics_manager.as_tool(tool_name="lyrics_manager", tool_description="Generate the BEST lyric about the teams past 24 hours"),
         song_title_agent.as_tool(tool_name="song_title_agent", tool_description="Generate a song title based on lyrics"),
+        music_style_agent.as_tool(tool_name="music_style_agent", tool_description="Generates a music style based on lyrics"),
         function_tool(song_creator.create_song)
     ],
     model="gpt-4o-mini",

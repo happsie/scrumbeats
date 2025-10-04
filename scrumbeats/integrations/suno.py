@@ -7,27 +7,28 @@ class SongCreator:
     def __init__(self):
         self._has_triggered_creation = False
     
-    def create_song(self, lyrics: str, genre: str, title: str):
+    def create_song(self, lyrics: str, music_style: str, title: str):
         """
         Create a song based on a lyrics and genre
 
         Args: 
             - lyrics: The lyrics to create a song with
-            - Genre: The genre to create the song with 
+            - music_style: The music style to create the song with 
             - title: The song title
         """
         if self._has_triggered_creation:
+            print('SunoAPI already triggered. Skipping execution')
             return
         
         self._has_triggered_creation = True
 
         print("Creating a song!")
-        print(lyrics, genre, title)
+        print(lyrics, music_style, title)
 
         url = "https://api.sunoapi.org/api/v1/generate"
         payload = {
             "prompt": lyrics,
-            "style": genre,
+            "style": music_style,
             "title": title,
             "customMode": True,
             "instrumental": False,

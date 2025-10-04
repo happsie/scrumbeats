@@ -1,5 +1,5 @@
 from .song_director import song_director
-from scrumbeats.integrations import pull_requests, issues, builds 
+from scrumbeats.integrations import pull_requests, issues, release 
 from agents import Agent, handoff, RunContextWrapper
 from pydantic import BaseModel
 
@@ -30,7 +30,7 @@ scrumbeats_director = Agent(
     tools=[
         pull_requests,
         issues,
-        builds
+        release
     ],
     handoffs=[handoff(song_director, input_type=Summary, on_handoff=on_handoff)],
     model="gpt-4o-mini",
