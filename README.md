@@ -2,6 +2,10 @@
 
 ScrumBeats turns the past 24 hours of engineering activity into a song. A director agent gathers updates from developer tools, lyricist agents compete to write the best verses, and the Suno API produces the final track.
 
+# Important note: 
+Due to confidential information and different environment setups, only a mock lives inside the integrations for internal data. 
+Replace the mocking agents with actual integrations. 
+
 ## Features
 - Multi-agent orchestration built on `openai-agents`, including a summary director and three specialized lyricists
 - Example integrations for Bitbucket pull requests, Jira issues, and Jenkins builds to simulate daily activity
