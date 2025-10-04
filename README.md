@@ -2,7 +2,10 @@
 
 ScrumBeats turns the past 24 hours of engineering activity into a song. A director agent gathers updates from developer tools, lyricist agents compete to write the best verses, and the Suno API produces the final track.
 
-# Important note: 
+# Important notes: 
+This is could of course be optimized to not use as many agents. But this is a way to show off an learn more about Agentic AI and
+serves as a great and fun discovery project.
+
 Due to confidential information and different environment setups, only a mock lives inside the integrations for internal data. 
 Replace the mocking agents with actual integrations. 
 
@@ -44,3 +47,8 @@ Replace the mocking agents with actual integrations.
 - Update the prompt in `main.py` to change the theme or level of detail in the summary.
 - Modify the sample data in `scrumbeats/integrations/*` to reflect real tool responses or connect to live APIs.
 - Adjust the lyric agents in `scrumbeats/directors/song_director.py` to experiment with different styles or model selections.
+
+
+## Overview
+
+![overview](scrumbeats.png)
