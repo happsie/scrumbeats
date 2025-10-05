@@ -2,7 +2,7 @@ import asyncio
 import os
 
 from dotenv import load_dotenv
-from scrumbeats.directors import scrumbeats_director, song_director
+from scrumbeats.agents import scrumbeats_director, song_director
 from agents import trace, Runner
 
 def load_env():
