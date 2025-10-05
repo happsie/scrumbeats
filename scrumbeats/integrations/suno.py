@@ -1,6 +1,7 @@
 import requests
 import time
 import os
+import json
 
 # This class is just to manage the function calls to SunoAPI since its quite expensive. The LLM shouldn't call more than once, but cant be guaranteed. 
 class SongCreator:
@@ -22,8 +23,14 @@ class SongCreator:
         
         self._has_triggered_creation = True
 
-        print("Creating a song!")
-        print(lyrics, music_style, title)
+        print("Generating the song!")
+        print(f"""
+Title: {title}
+
+Lyrics: {lyrics}
+
+Style: {music_style}
+        """)
 
         url = "https://api.sunoapi.org/api/v1/generate"
         payload = {
@@ -53,18 +60,24 @@ class SongCreator:
             print("could not generate song.", response.json())
             return {"status", "error"}
         
-        self.poll(response.json()["data"]["taskId"], 0)
-        return {"status": "success"}
+        songUrlOrNone = None
+        for num in range(10):
+            print(f"checking song generation, attempt {num}")
+            songUrlOrNone = self.poll(response.json()["data"]["taskId"])
+            if songUrlOrNone != None:
+                break
+            time.sleep(30)
+            
+        print(f"Song successfully generated: {songUrlOrNone}")
 
-    def poll(self, taskId: str, attempts: int): 
-        if attempts >= 8:
-            return
+    def poll(self, taskId: str) -> str | None: 
         SUNOAPI_API_KEY = os.getenv("SUNOAPI_API_KEY")
         url = f"https://api.sunoapi.org/api/v1/generate/record-info?taskId={taskId}"
         headers = {"Authorization": f"Bearer {SUNOAPI_API_KEY}",}
 
-        response = requests.get(url, headers=headers)
-        print(response, response.json()["data"]["status"])
-        if response.json()["data"]["status"] != "SUCCESS":
-            time.sleep(15)
-            self.poll(taskId=taskId, attempts=attempts+1)
+        response = requests.get(url, headers=headers).json()
+        print(f"status: {response["data"]["status"]}")
+        if response["data"]["status"] != "SUCCESS":
+            return None
+        else:
+            return response["data"]["response"]["sunoData"]["audioUrl"]
